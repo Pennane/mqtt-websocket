@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>MQTT Data</title>
+    </head>
+    <body style="position: fixed; bottom: 0; overflow: hidden; width: 100vw; right: 0; left: 0">
+        <script>
+            class Gateway {
+                constructor({ url, callback }) {
+                    this.connected = false
+                    this.autoRestart = true
+                    this.url = url
+                    this.callback = callback
+                    this.connection = null
+                }
+                start() {
+                    this.connection = new WebSocket(this.url)
+                    this.connection.onopen = this.onOpen.bind(this)
+                    this.connection.onmessage = this.onMessage.bind(this)
+                    this.connection.onclose = this.onClose.bind(this)
+                    this.connection.onerror = this.onError.bind(this)
+                }
+                stop() {
+                    this.connection.close()
+                    this.autoRestart = false
+                    this.connection = false
+                }
+                onOpen() {
+                    this.connected = true
+                }
+                onMessage(message) {
+                    console.log('message')
+                    this.callback(message)
+                }
+                onClose() {
+                    this.connected = false
+                    if (!this.autoRestart) return
+                    setTimeout(() => {
+                        console.log('reconnecting')
+                        this.start()
+                    }, 3000)
+                }
+                onError(error) {
+                    console.error(error)
+                }
+            }
+
+            const handleMessage = (message) => {
+                console.log('handle')
+                const container = document.createElement('p')
+                container.textContent = message.data
+                document.body.appendChild(container)
+            }
+
+            const gateway = new Gateway({ url: 'ws://127.0.0.1:3001/', callback: handleMessage })
+            gateway.start()
+        </script>
+    </body>
+</html>
