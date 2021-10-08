@@ -5,9 +5,20 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>MQTT Data</title>
+        <style>
+            body {
+            }
+
+            .content {
+            }
+        </style>
     </head>
     <body style="position: fixed; bottom: 0; overflow: hidden; width: 100vw; right: 0; left: 0">
+        <div class="content"></div>
         <script>
+            const ip = '172.20.10.3'
+            const port = '3001'
+
             class Gateway {
                 constructor({ url, callback }) {
                     this.connected = false
@@ -48,14 +59,18 @@
                 }
             }
 
+            const target = document.querySelector('.content')
+
             const handleMessage = (message) => {
-                console.log('handle')
-                const container = document.createElement('p')
+                const container = document.createElement('pre')
                 container.textContent = message.data
                 document.body.appendChild(container)
+                if (target.childNodes.length > 80) {
+                    document.body.removeChild(document.body.childNodes[0])
+                }
             }
 
-            const gateway = new Gateway({ url: 'ws://127.0.0.1:3001/', callback: handleMessage })
+            const gateway = new Gateway({ url: 'ws://' + ip + ':' + port, callback: handleMessage })
             gateway.start()
         </script>
     </body>
